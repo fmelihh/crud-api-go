@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/fmelihh/crud-api-go/config"
 	"github.com/fmelihh/crud-api-go/service/auth"
 	"github.com/fmelihh/crud-api-go/types"
 	"github.com/fmelihh/crud-api-go/utils"
@@ -49,7 +50,14 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": ""})
+	secret := []byte(config.Envs.JWTSecret)
+	token, err := auth.CreateJWT(secret, u.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
